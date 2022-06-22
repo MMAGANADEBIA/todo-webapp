@@ -110,5 +110,29 @@ module.exports = {
     } catch (error) {
       console.error(error);
     }
+  },
+  getTasks: async (req, res) => {
+    try {
+      let db = new sqlite3.Database(DBSOURCE, (err) => {
+        let data = `SELECT tasks.task_id, tasks.task, tasks.description FROM users INNER JOIN tasks on users.id = tasks.id WHERE users.id = ${id}`
+        db.all(data, (err, rows) => {
+          if (err) {
+            console.log(err);
+          } else {
+            // console.log(rows)
+            res.json(rows);
+          }
+        })
+      })
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  deleteTasks: async (req, res) => {
+    try {
+      console.log(req.body)
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
