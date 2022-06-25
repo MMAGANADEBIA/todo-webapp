@@ -130,9 +130,32 @@ module.exports = {
   },
   deleteTasks: async (req, res) => {
     try {
-      console.log(req.body)
+      // console.log(req.body)
+      let tasks = req.body.tasks;
+      let db = new sqlite3.Database(DBSOURCE, (err) => {
+        if (err) {
+          console.error(err);
+          throw err;
+        } else {
+          tasks.map((element) => {
+            db.run(
+              'DELETE FROM tasks WHERE task_id = ?',
+              element,
+              function(err, result) {
+                if (err) {
+                  res.status(400).json({ "error": res.message });
+                }
+              }
+            )
+          })
+        }
+      })
     } catch (error) {
       console.error(error);
     }
+  },
+  updateTask: async (req, res) => {
+    console.log(`Body: ${req.body}`);
+    res.json(req.body)
   }
 }
