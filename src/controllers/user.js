@@ -2,6 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const md5 = require('md5');
 const DBSOURCE = 'db.sqlite';
 let id;
+let user;
 module.exports = {
   index: async (req, res) => {
     try {
@@ -29,6 +30,7 @@ module.exports = {
               if (row !== undefined) {
                 res.json({ message: 'accepted' })
                 id = row.id;
+                user = row.name;
               }
               if (row == undefined) {
                 res.json({ message: 'denied' })
@@ -37,6 +39,14 @@ module.exports = {
           })
         }
       })
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  getUser: async (req, res) => {
+    try {
+      // console.log(user)
+      res.json({ user: user })
     } catch (error) {
       console.error(error);
     }
@@ -155,7 +165,26 @@ module.exports = {
     }
   },
   updateTask: async (req, res) => {
-    console.log(`Body: ${req.body}`);
-    res.json(req.body)
+    try {
+      let db = new sqlite3.Database(DBSOURCE, (err) => {
+        if (err) {
+          console.error(err);
+          throw err;
+        } else {
+          db.run(`UPDATE tasks set task = COALESCE(?, task), description = COALESCE(?, description) where task_id = ?`,
+            [req.body.task, req.body.description, req.body.task_id],
+            function(err, res) {
+              if (err) {
+                res.status(400).json({ "error": res.message })
+                return;
+              }
+            }
+          )
+        }
+      })
+      res.json(req.body)
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
