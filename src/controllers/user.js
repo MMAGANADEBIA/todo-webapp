@@ -3,6 +3,7 @@ const md5 = require('md5');
 const DBSOURCE = 'db.sqlite';
 let id;
 let user;
+let password;
 module.exports = {
   index: async (req, res) => {
     try {
@@ -31,6 +32,7 @@ module.exports = {
                 res.json({ message: 'accepted' })
                 id = row.id;
                 user = row.name;
+                password = row.password;
               }
               if (row == undefined) {
                 res.json({ message: 'denied' })
@@ -46,7 +48,36 @@ module.exports = {
   getUser: async (req, res) => {
     try {
       // console.log(user)
-      res.json({ user: user })
+      let db = new sqlite3.Database(DBSOURCE, (err) => {
+        if (err) {
+          console.log(err);
+          throw err;
+        } else {
+          let data = 'SELECT id, name, password FROM users WHERE id = ?;'
+          db.get(data, id, (err, row) => {
+            if (err) {
+              console.log(err);
+              throw err;
+            } else {
+              // console.log(row);
+              if (row !== undefined) {
+                res.json({
+                  id: row.id,
+                  name: row.name,
+                  password: row.password
+                })
+              }
+              if (row == undefined) {
+                res.status(400).json({ "error": res.message })
+              }
+            }
+          })
+        }
+      })
+      // res.json({
+      //   user: user,
+      //   id: id
+      // })
     } catch (error) {
       console.error(error);
     }
@@ -74,13 +105,7 @@ module.exports = {
           })
         }
       });
-      db.close((err) => {
-        if (err) {
-          console.error(err);
-        } else {
-          console.log('Closed the database connection.');
-        }
-      })
+      db.close();
       res.json({ message: "0k" });
     } catch (error) {
       console.error(error)
@@ -109,13 +134,7 @@ module.exports = {
           })
         }
       });
-      db.close((err) => {
-        if (err) {
-          console.error(err);
-        } else {
-          console.log('Closed the database connection.');
-        }
-      })
+      db.close();
       res.json({ message: '0k' })
     } catch (error) {
       console.error(error);
@@ -134,6 +153,7 @@ module.exports = {
           }
         })
       })
+      db.close();
     } catch (error) {
       console.error(error);
     }
@@ -160,6 +180,7 @@ module.exports = {
           })
         }
       })
+      db.close();
     } catch (error) {
       console.error(error);
     }
@@ -180,6 +201,44 @@ module.exports = {
               }
             }
           )
+        }
+      })
+      db.close();
+      res.json(req.body)
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  updateAccount: async (req, res) => {
+    try {
+      console.log(req.body);
+      console.log("updating")
+      // let nName;
+      // let newPassword;
+      // if (req.body.newName) {
+      //   
+      // }
+      let db = new sqlite3.Database(DBSOURCE, (err) => {
+        if (err) {
+          console.error(err);
+          throw err;
+        } else {
+          db.run(`UPDATE users set name = COALESCE(?, name), password = COALESCE(?, password) where id = ?`,
+            [req.body.name ? req.body.name : user, req.body.password ? md5(req.body.password) : password, id],
+            function(err, res) {
+              if (err) {
+                res.status(400).json({ "error": res.message })
+                return;
+              }
+            }
+          )
+        }
+      })
+      db.close((err) => {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log('Closed the database connection.');
         }
       })
       res.json(req.body)
