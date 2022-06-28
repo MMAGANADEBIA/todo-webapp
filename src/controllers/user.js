@@ -213,11 +213,6 @@ module.exports = {
     try {
       console.log(req.body);
       console.log("updating")
-      // let nName;
-      // let newPassword;
-      // if (req.body.newName) {
-      //   
-      // }
       let db = new sqlite3.Database(DBSOURCE, (err) => {
         if (err) {
           console.error(err);
@@ -242,6 +237,40 @@ module.exports = {
         }
       })
       res.json(req.body)
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  deleteAccount: async (req, res) => {
+    try {
+      let db = new sqlite3.Database(DBSOURCE, (err) => {
+        if (err) {
+          console.error(err);
+          throw err;
+        } else {
+          db.run('DELETE FROM users WHERE id = ?',
+            id,
+            function(err, result) {
+              if (err) {
+                res.status(400).json({ "error": res.message });
+                db.close();
+                return;
+              }
+              user = '';
+            }
+          )
+          db.run('DELETE FROM tasks WHERE id = ?',
+            id,
+            function(err, result) {
+              if (err) {
+                res.status(400).json({ "error": res.message });
+                db.close();
+                return;
+              }
+            }
+          )
+        }
+      })
     } catch (error) {
       console.error(error);
     }
