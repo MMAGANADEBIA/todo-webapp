@@ -1,3 +1,4 @@
+//import requiered modules and set a route
 const express = require('express');
 const user = require('./user/userRoutes.js');
 const router = express.Router();
